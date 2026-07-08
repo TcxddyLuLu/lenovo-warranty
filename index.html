@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ThinkPad 保修批量查询</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1>ThinkPad / 联想 序列号批量查询</h1>
+      <p class="subtitle">输入或导入 SN，查询型号与保修状态，支持导出 Excel（数据经本地/代理查询联想接口）</p>
+    </header>
+
+    <section class="panel settings-panel">
+      <h2>查询设置</h2>
+      <div class="settings-grid">
+        <label>
+          地区
+          <select id="region">
+            <option value="cn" selected>中国大陆（联想中国）</option>
+            <option value="global">国际（官方 API，需 ClientID）</option>
+          </select>
+        </label>
+        <label id="clientid-wrap" class="hidden">
+          ClientID（国际 API）
+          <input type="password" id="client-id" placeholder="向联想申请的企业 API Token" autocomplete="off" />
+        </label>
+        <label>
+          请求间隔（毫秒）
+          <input type="number" id="delay-ms" value="400" min="100" max="5000" step="100" />
+        </label>
+      </div>
+      <p class="hint" id="mode-hint"></p>
+    </section>
+
+    <section class="panel">
+      <h2>输入 SN</h2>
+      <p class="hint">每行一个序列号，或用逗号/空格/分号分隔；也可从 Excel 导入（自动识别「SN / Serial / 序列号」列）</p>
+      <textarea id="sn-input" rows="6" placeholder="例如：&#10;PF2W2GLT&#10;PC2EF1G1"></textarea>
+      <div class="row-actions">
+        <label class="btn file-btn">
+          导入 Excel
+          <input type="file" id="excel-input" accept=".xlsx,.xls" hidden />
+        </label>
+        <button type="button" class="btn ghost" id="btn-clear-input">清空输入</button>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button type="button" class="btn primary" id="btn-query">开始查询</button>
+      <button type="button" class="btn" id="btn-export" disabled>导出 Excel</button>
+      <button type="button" class="btn ghost" id="btn-stop" disabled>停止</button>
+      <button type="button" class="btn ghost" id="btn-reset">重置结果</button>
+    </section>
+
+    <p class="progress" id="progress" hidden></p>
+    <p class="error" id="error-msg" hidden></p>
+
+    <section class="stats-bar" id="stats-bar" hidden>
+      <div class="stat"><span class="stat-label">总数</span><span class="stat-value" id="stat-total">0</span></div>
+      <div class="stat"><span class="stat-label">在保</span><span class="stat-value ok" id="stat-active">0</span></div>
+      <div class="stat"><span class="stat-label">已过保</span><span class="stat-value warn" id="stat-expired">0</span></div>
+      <div class="stat"><span class="stat-label">未查到</span><span class="stat-value muted" id="stat-unknown">0</span></div>
+    </section>
+
+    <section class="table-wrap" id="table-section" hidden>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>序列号 (SN)</th>
+              <th>型号</th>
+              <th>保修状态</th>
+              <th>保修开始</th>
+              <th>保修结束</th>
+              <th>保修类型</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>发给别人用：部署到 <strong>Vercel</strong> 后分享链接（步骤见 <code>DEPLOY-SHARE.md</code>）</p>
+      <p>本机使用：<code>./start.sh</code> → <code>http://localhost:8766</code></p>
+      <p>官网核对：<a href="https://newsupport.lenovo.com.cn/deviceGuarantee.html" target="_blank" rel="noopener">联想中国保修查询</a></p>
+    </footer>
+  </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
